@@ -9,7 +9,7 @@ import {
 import {message, Tabs} from 'antd';
 import React, {useState} from 'react';
 import styled from "styled-components";
-import {login, registry} from "../../api/user";
+import {login, registry} from "@/api/user";
 import {RESP_CODE, USER_KEY} from "../../constant";
 import {useHistory} from "react-router";
 
@@ -24,12 +24,12 @@ const Login: React.FC = () => {
   const [form] = ProForm.useForm();
   const onFinish = async (val) => {
     if (mode === MODE.LOGIN) {
-      const {code, data} = await login(val.username, val.password);
+      const {data:{data,code}} = await login(val.username, val.password);
       if (code === RESP_CODE.SUCCESS) {
         message.success('登录成功')
         const userInfo = {
-          userId: data.id,
-          username: data.name,
+          userId: data.userId,
+          username: data.username,
         }
         localStorage.setItem(USER_KEY, JSON.stringify(userInfo))
         form.resetFields();
@@ -39,7 +39,7 @@ const Login: React.FC = () => {
       }
     } else {
       try {
-        const {code} = await registry({
+        const {data:{code}} = await registry({
           name: val.usernameR,
           password: val.passwordR,
         });

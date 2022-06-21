@@ -1,10 +1,10 @@
-﻿import axios from "axios";
+﻿import axios, { AxiosInstance } from "axios";
 import qs from "qs"
 import {message} from "antd";
 import {AUTH_TOKEN, RESP_CODE} from "../constant";
 import history from "../utils/history";
 
-const instance = axios.create({
+const instance: AxiosInstance = axios.create({
   baseURL: 'http://localhost:8080/api',
   timeout: 3000,
   paramsSerializer: function (params) {
@@ -40,6 +40,7 @@ instance.interceptors.request.use(req =>{
   //这里可以根据项目需求在请求前进行拦截处理并返回req
   //例子（为所有请求加上token）
   let token = localStorage.getItem(AUTH_TOKEN) || '';
+  // @ts-ignore
   req.headers.common['auth-token'] = token
   return req;
 
@@ -52,7 +53,7 @@ instance.interceptors.response.use(
       //这里是我和后台定的状态码
       switch (res.data.code){
         case RESP_CODE.SUCCESS:
-          return Promise.resolve(res.data)
+          return Promise.resolve(res)
         case RESP_CODE.FAIL:
           message.error(res.data.message);
           break;
@@ -78,7 +79,7 @@ instance.interceptors.response.use(
     } = error;
     if (response) {
       // 请求已发出，但是不在2xx的范围
-      errorHandle(response.status, response.data.message);
+      errorHandle(response.status);
       message.error("网络错误")
       return Promise.reject(response);
     } else {
