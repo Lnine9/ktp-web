@@ -1,5 +1,3 @@
-import {AxiosResponse} from "axios";
-import React from "react";
 
 export interface BaseResp<T> {
   code: number,
@@ -44,7 +42,7 @@ export interface Homework {
   id?: string
   taskId: string
   userId: string
-  score: string
+  score?: string
   filePath?: string
   fileName?: string
 }

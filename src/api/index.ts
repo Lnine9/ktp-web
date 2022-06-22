@@ -1,11 +1,11 @@
 ﻿import axios, { AxiosInstance } from "axios";
 import qs from "qs"
 import {message} from "antd";
-import {AUTH_TOKEN, RESP_CODE} from "../constant";
+import {AUTH_TOKEN, HOST, RESP_CODE} from "../constant";
 import history from "../utils/history";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: HOST,
   timeout: 3000,
   paramsSerializer: function (params) {
     return qs.stringify(params, { arrayFormat: 'repeat', allowDots: true });
