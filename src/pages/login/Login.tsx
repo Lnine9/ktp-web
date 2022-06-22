@@ -13,6 +13,10 @@ import {login, registry} from "@/api/user";
 import {AUTH_TOKEN, RESP_CODE, USER_KEY} from "../../constant";
 import {useHistory} from "react-router";
 import {User} from "@/types";
+// @ts-ignore
+import { ReactComponent as TeacherIcon } from '@/assets/teacher.svg'
+// @ts-ignore
+import { ReactComponent as StudentIcon } from '@/assets/student.svg'
 
 enum MODE {
   LOGIN = 'login',
@@ -170,8 +174,8 @@ const Login: React.FC = () => {
                 shouldUpdate={true}
               >
                 <Radio.Group defaultValue={0}>
-                  <Radio.Button value={0}>学生</Radio.Button>
-                  <Radio.Button value={1}>教师</Radio.Button>
+                  <Radio.Button value={0}><StudentIcon />学生</Radio.Button>
+                  <Radio.Button value={1}><TeacherIcon />教师</Radio.Button>
                 </Radio.Group>
               </ProFormItem>
               <ProFormText
@@ -247,9 +251,14 @@ const Container = styled.div`
     }
     .ant-radio-button-wrapper{
       height: 50px;
-      line-height: 50px;
       width: 48%;
       box-sizing: border-box;
+      padding: 5px 15px;
+      span{
+        display: flex;
+        align-content: center;
+        gap: 5px;
+      }
     }
   }
 `
