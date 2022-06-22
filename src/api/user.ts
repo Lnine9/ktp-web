@@ -3,10 +3,10 @@ import instance from "./index";
 import {BaseResp, User} from "@/types";
 import { AxiosPromise } from "axios";
 
-export function login(username, password): AxiosPromise<BaseResp<User>>{
+export function login(key, password): AxiosPromise<BaseResp<User>>{
   return instance.get('login',{
     params:{
-      username,
+      key,
       password: md5(password),
     }
   })
@@ -20,6 +20,7 @@ export function getUserInfo(userId): AxiosPromise<BaseResp<User>>{
   })
 }
 
-export function registry(userInfo): AxiosPromise<BaseResp<string>>{
-  return instance.post('login', {...userInfo})
+export function registry(userInfo: User): AxiosPromise<BaseResp<string>>{
+  userInfo.password = md5(userInfo.password)
+  return instance.post('login/registry', {...userInfo})
 }

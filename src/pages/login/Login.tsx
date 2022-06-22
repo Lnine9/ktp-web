@@ -3,15 +3,16 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import {
-  LoginForm, ProForm,
+  LoginForm, ProForm, ProFormItem,
   ProFormText,
 } from '@ant-design/pro-components';
-import {message, Tabs} from 'antd';
+import {message, Radio, Tabs} from 'antd';
 import React, {useState} from 'react';
 import styled from "styled-components";
 import {login, registry} from "@/api/user";
-import {RESP_CODE, USER_KEY} from "../../constant";
+import {AUTH_TOKEN, RESP_CODE, USER_KEY} from "../../constant";
 import {useHistory} from "react-router";
+import {User} from "@/types";
 
 enum MODE {
   LOGIN = 'login',
@@ -24,34 +25,31 @@ const Login: React.FC = () => {
   const [form] = ProForm.useForm();
   const onFinish = async (val) => {
     if (mode === MODE.LOGIN) {
-      const {data:{data,code}} = await login(val.username, val.password);
-      if (code === RESP_CODE.SUCCESS) {
+      const {data:{data,code}} = await login(val.key, val.password);
+      if (code === RESP_CODE.SUCCESS){
         message.success('登录成功')
-        const userInfo = {
-          userId: data.userId,
-          username: data.username,
-        }
-        localStorage.setItem(USER_KEY, JSON.stringify(userInfo))
+        localStorage.setItem(USER_KEY, JSON.stringify(data))
+        localStorage.setItem(AUTH_TOKEN, JSON.stringify(data.token))
         form.resetFields();
-        history.push('/login')
-      } else {
-        message.error('请检查用户名或密码')
+        history.push('/home')
       }
     } else {
-      try {
-        const {data:{code}} = await registry({
-          name: val.usernameR,
-          password: val.passwordR,
-        });
-        if (code === RESP_CODE.SUCCESS) {
-          message.success('注册成功')
-          setMode(MODE.LOGIN)
-        } else {
-          message.error('注册失败，请检查输入')
-        }
-        // form.resetFields();
-      } catch (e) {
-        message.error('请求错误')
+      let isEmail = false
+      if (val.keyR.indexOf('@') != -1){
+        isEmail = true
+      }
+      const userInfo: User = {
+        username: val.username,
+        account: val.account,
+        email: isEmail? val.keyR:null,
+        phone: isEmail? null:val.keyR,
+        role: val.role,
+        password: val.passwordR,
+      }
+      const {data: {code}} = await registry(userInfo);
+      if (code === RESP_CODE.SUCCESS){
+        message.success('注册成功')
+        setMode(MODE.LOGIN);
       }
     }
   }
@@ -59,7 +57,7 @@ const Login: React.FC = () => {
     <Container>
       <div className='login-form'>
         <LoginForm
-          title="DOLLARS"
+          title="课堂派"
           form={form}
           onFinish={onFinish}
           submitter={{
@@ -80,17 +78,16 @@ const Login: React.FC = () => {
           {mode === MODE.LOGIN && (
             <>
               <ProFormText
-                name="username"
+                name="key"
                 fieldProps={{
                   size: 'large',
                   prefix: <UserOutlined className={'prefixIcon'}/>,
                 }}
-                placeholder={'Username'}
+                placeholder={'邮箱/手机号'}
                 rules={[
                   {
                     required: true,
-                    pattern: /^[a-zA-Z0-9_-]{2,16}$/,
-                    message: '请输入用户名!(2到16位字母、数字、下划线)',
+                    message: '请输入邮箱/手机号',
                   },
                 ]}
               />
@@ -100,7 +97,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined className={'prefixIcon'}/>,
                 }}
-                placeholder={'Password'}
+                placeholder={'密码'}
                 rules={[
                   {
                     required: true,
@@ -114,17 +111,16 @@ const Login: React.FC = () => {
           {mode === MODE.REGISTRY && (
             <>
               <ProFormText
-                name="usernameR"
+                name="keyR"
                 fieldProps={{
                   size: 'large',
                   prefix: <UserOutlined className={'prefixIcon'}/>,
                 }}
-                placeholder={'Username'}
+                placeholder={'请输入邮箱/手机号'}
                 rules={[
                   {
                     required: true,
-                    pattern: /^[a-zA-Z0-9_]{2,16}$/,
-                    message: '请输入用户名!(2到16位字母、数字、下划线)',
+                    message: '请输入邮箱/手机号',
                   },
                 ]}
               />
@@ -134,7 +130,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined className={'prefixIcon'}/>,
                 }}
-                placeholder={'Password'}
+                placeholder={'请输入密码'}
                 rules={[
                   {
                     required: true,
@@ -150,7 +146,7 @@ const Login: React.FC = () => {
                   prefix: <LockOutlined className={'prefixIcon'}/>,
                 }}
                 dependencies={['password']}
-                placeholder={'ConfirmPassword'}
+                placeholder={'确认密码'}
                 rules={[
                   {
                     required: true,
@@ -165,6 +161,45 @@ const Login: React.FC = () => {
                       return Promise.reject(new Error('两次密码不一致'));
                     },
                   }),
+                ]}
+              />
+              <ProFormItem
+                name='role'
+                label='选择身份'
+                className='role'
+                shouldUpdate={true}
+              >
+                <Radio.Group defaultValue={0}>
+                  <Radio.Button value={0}>学生</Radio.Button>
+                  <Radio.Button value={1}>教师</Radio.Button>
+                </Radio.Group>
+              </ProFormItem>
+              <ProFormText
+                name="username"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <UserOutlined className={'prefixIcon'}/>,
+                }}
+                placeholder={'姓名'}
+                rules={[
+                  {
+                    required: true,
+                    message: '请输入姓名',
+                  },
+                ]}
+              />
+              <ProFormText
+                name="account"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <UserOutlined className={'prefixIcon'}/>,
+                }}
+                placeholder='学号/教师号'
+                rules={[
+                  {
+                    required: true,
+                    message: `请输入学号/教师号`,
+                  },
                 ]}
               />
             </>
@@ -198,6 +233,24 @@ const Container = styled.div`
 
   .ant-tabs-tab {
     padding: 6px 15px;
+  }
+  
+  .role{
+    .ant-form-item-label{
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .ant-radio-group{
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+    .ant-radio-button-wrapper{
+      height: 50px;
+      line-height: 50px;
+      width: 48%;
+      box-sizing: border-box;
+    }
   }
 `
 
